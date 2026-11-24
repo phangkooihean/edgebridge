@@ -22,10 +22,11 @@ pub fn config_dir_path() -> PathBuf {
 pub fn format_display_summary(dl: &DisplayLayout) -> String {
     let parts: Vec<String> = dl.monitors.iter().enumerate().map(|(i, m)| {
         let star = if m.is_primary { "*" } else { "" };
-        format!("#{}{i1} {} ({}x{} @ {:.0}% -> {}x{} logical, {:.0}Hz, {}, pos {},{})",
-            i + 1, star, m.connector, m.physical_width, m.physical_height,
-            m.scale * 100.0, m.logical_width, m.logical_height, m.refresh_rate, m.orientation, m.x, m.y,
-            i1 = ""
+        format!(
+            "#{} {} ({}x{} @ {:.0}% -> {}x{} logical, {:.0}Hz, {}, pos {},{}){}",
+            i + 1, m.connector, m.physical_width, m.physical_height,
+            m.scale * 100.0, m.logical_width, m.logical_height, m.refresh_rate,
+            m.orientation, m.x, m.y, star
         )
     }).collect();
     format!("{} [virtual {}x{}]: {}", dl.display_mode, dl.total_logical_width, dl.total_logical_height, parts.join(" | "))

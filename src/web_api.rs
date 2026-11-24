@@ -294,8 +294,10 @@ async fn push_sync_to_both(ctx: &WebCtx, start_kvm: bool, force_restart: bool) -
             return ActionResp { ok: false, message: "Complete Step 1 (Probe & Accept) first.".into() };
         };
         g.layout_synced = true;
-        if let Some(ref mut p) = g.active_peer { p.edge = g.edge; p.align_offset_pct = g.align_offset_pct; }
-        if let Some(mp) = g.peers.get_mut(&peer.ip) { mp.edge = g.edge; mp.align_offset_pct = g.align_offset_pct; }
+        let cur_edge = g.edge;
+        let cur_off = g.align_offset_pct;
+        if let Some(ref mut p) = g.active_peer { p.edge = cur_edge; p.align_offset_pct = cur_off; }
+        if let Some(mp) = g.peers.get_mut(&peer.ip) { mp.edge = cur_edge; mp.align_offset_pct = cur_off; }
         let toml = write_config_files(&g).unwrap_or_default();
         let req = PeerSyncReq {
             from_hostname: g.hostname.clone(), from_ip: g.ip.clone(), from_fingerprint: g.fingerprint.clone(),
