@@ -1,0 +1,40 @@
+[package]
+name = "edgebridge"
+version = "1.0.0-rc.1"
+edition = "2021"
+license = "MIT"
+description = "Single-binary Rust LAN KVM orchestrator with embedded browser UI, shared telemetry, and multi-peer topology for macOS, Linux, and Windows."
+
+[lib]
+name = "edgebridge"
+path = "src/lib.rs"
+
+[[bin]]
+name = "edgebridge"
+path = "src/main.rs"
+
+[dependencies]
+axum = "0.8"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1", features = ["full"] }
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[target.'cfg(windows)'.dependencies.windows-sys]
+version = "0.59"
+features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Gdi",
+    "Win32_System_Power",
+    "Win32_System_SystemInformation",
+    "Win32_System_Threading",
+    "Win32_UI_WindowsAndMessaging",
+]
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true
