@@ -35,52 +35,60 @@ Each section below installs missing tools (`git`, Rust `cargo`, and `lan-mouse`)
 
 ### 1. macOS (Built-in Terminal — zsh)
 
-    command -v brew >/dev/null 2>&1 || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    brew list git >/dev/null 2>&1 || brew install git openssl
-    command -v cargo >/dev/null 2>&1 || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    . "$HOME/.cargo/env"
-    command -v lan-mouse >/dev/null 2>&1 || cargo install lan-mouse
+```zsh
+command -v brew >/dev/null 2>&1 || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew list git >/dev/null 2>&1 || brew install git openssl
+command -v cargo >/dev/null 2>&1 || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+. "$HOME/.cargo/env"
+command -v lan-mouse >/dev/null 2>&1 || cargo install lan-mouse
 
-    git clone https://github.com/phangkooihean/edgebridge.git "$HOME/edgebridge"
-    "$HOME/edgebridge/build.sh"
-    "$HOME/edgebridge/target/release/edgebridge"
+git clone https://github.com/phangkooihean/edgebridge.git "$HOME/edgebridge"
+"$HOME/edgebridge/build.sh"
+"$HOME/edgebridge/target/release/edgebridge"
+```
 
-* **macOS Accessibility Tip:** At Step 3, open **System Settings -> Privacy & Security -> Accessibility** (and **Input Monitoring**), press `Cmd + Shift + .` inside the `+` file picker to reveal `~/.cargo/bin/lan-mouse`, toggle both **Terminal** and **lan-mouse** ON, quit Terminal (`Cmd + Q`), and restart EdgeBridge.
+* **macOS Accessibility Tip:** At Step 3, open **System Settings -> Privacy & Security -> Accessibility** (and **Input Monitoring**), press `Cmd + Shift + .` inside the `+` picker to reveal `~/.cargo/bin/lan-mouse`, toggle both **Terminal** and **lan-mouse** ON, quit Terminal (`Cmd + Q`), and restart EdgeBridge.
 
 ### 2. Ubuntu / Debian (Default Terminal — apt)
 
-    sudo apt update && sudo apt install -y git curl openssl build-essential libnotify-bin pkg-config libadwaita-1-dev libgtk-4-dev libx11-dev libxtst-dev
-    command -v cargo >/dev/null 2>&1 || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    . "$HOME/.cargo/env"
-    command -v lan-mouse >/dev/null 2>&1 || cargo install lan-mouse
+```bash
+sudo apt update && sudo apt install -y git curl openssl build-essential libnotify-bin pkg-config libadwaita-1-dev libgtk-4-dev libx11-dev libxtst-dev
+command -v cargo >/dev/null 2>&1 || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+. "$HOME/.cargo/env"
+command -v lan-mouse >/dev/null 2>&1 || cargo install lan-mouse
 
-    git clone https://github.com/phangkooihean/edgebridge.git "$HOME/edgebridge"
-    "$HOME/edgebridge/build.sh"
-    "$HOME/edgebridge/target/release/edgebridge"
+git clone https://github.com/phangkooihean/edgebridge.git "$HOME/edgebridge"
+"$HOME/edgebridge/build.sh"
+"$HOME/edgebridge/target/release/edgebridge"
+```
 
 ### 3. Fedora Workstation (Default Terminal — dnf)
 
-    sudo dnf install -y git curl openssl gcc gcc-c++ make libnotify pkgconf-pkg-config libadwaita-devel gtk4-devel libX11-devel libXtst-devel
-    command -v cargo >/dev/null 2>&1 || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    . "$HOME/.cargo/env"
-    command -v lan-mouse >/dev/null 2>&1 || cargo install lan-mouse
+```bash
+sudo dnf install -y git curl openssl gcc gcc-c++ make libnotify pkgconf-pkg-config libadwaita-devel gtk4-devel libX11-devel libXtst-devel
+command -v cargo >/dev/null 2>&1 || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+. "$HOME/.cargo/env"
+command -v lan-mouse >/dev/null 2>&1 || cargo install lan-mouse
 
-    git clone https://github.com/phangkooihean/edgebridge.git "$HOME/edgebridge"
-    "$HOME/edgebridge/build.sh"
-    "$HOME/edgebridge/target/release/edgebridge"
+git clone https://github.com/phangkooihean/edgebridge.git "$HOME/edgebridge"
+"$HOME/edgebridge/build.sh"
+"$HOME/edgebridge/target/release/edgebridge"
+```
 
 * **Ubuntu & Fedora GNOME Wayland Tip (CLI & Web UI):** When Step 3 starts `lan-mouse`, GNOME shows a consent dialog. Toggle **"Allow Remote Input Capturing"** ON and click **"Share"**. Locking the screen revokes Wayland portals until you click **Stop Sharing** and **Next**.
 
 ### 4. Native Windows 10 / 11 (PowerShell — winget)
 
-    winget install --id Git.Git -e --source winget
-    winget install --id Rustlang.Rustup -e --source winget
-    winget install --id Microsoft.VisualStudio.2022.BuildTools -e --source winget --override "--quiet --wait --norestart --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
-    cargo install lan-mouse
+```powershell
+winget install --id Git.Git -e --source winget
+winget install --id Rustlang.Rustup -e --source winget
+winget install --id Microsoft.VisualStudio.2022.BuildTools -e --source winget --override "--quiet --wait --norestart --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+cargo install lan-mouse
 
-    git clone https://github.com/phangkooihean/edgebridge.git "$HOME\edgebridge"
-    & "$HOME\edgebridge\build.ps1"
-    & "$HOME\edgebridge\target\release\edgebridge.exe"
+git clone https://github.com/phangkooihean/edgebridge.git "$HOME\edgebridge"
+& "$HOME\edgebridge\build.ps1"
+& "$HOME\edgebridge\target\release\edgebridge.exe"
+```
 
 ---
 
