@@ -1,56 +1,115 @@
-# EdgeBridge (`v1.0.0-rc.1`) — Multi-Platform LAN KVM Orchestrator
+# EdgeBridge (`v1.0.0-rc.1`)
 
-**EdgeBridge** is an MIT-licensed, local-first Rust software KVM orchestrator for **macOS**, **Ubuntu/Debian Linux**, **Fedora Linux**, and **native Windows**. It lets you move your mouse and keyboard across paired machines via an embedded browser UI (`http://127.0.0.1:48720`) with magnetic display alignment, pointer/keyboard responsiveness health, and **Shared Cross-Node Telemetry** that informs the other diagnostic and multi-device tools I am building.
+![License: MIT](https://img.shields.io/badge/License-MIT-34d399.svg)
+![Rust](https://img.shields.io/badge/Rust-2021_Edition-f97316.svg)
+![Platforms](https://img.shields.io/badge/Platforms-macOS_%7C_Ubuntu_%7C_Fedora_%7C_Windows-38bdf8.svg)
+![CI](https://github.com/phangkooihean/edgebridge/actions/workflows/ci.yml/badge.svg)
 
-Builder profile: [https://builder-hub.rakyatdigital.gov.my/profile](https://builder-hub.rakyatdigital.gov.my/profile)  
-GitHub repository: [https://github.com/phangkooihean/edgebridge](https://github.com/phangkooihean/edgebridge)
+**EdgeBridge** is a local-first, single-binary Rust software KVM orchestrator for **macOS**, **Ubuntu/Debian**, **Fedora**, and **native Windows**. It unifies multiple computers on the same LAN or phone hotspot into one magnetic multi-monitor workspace—complete with real-time pointer/keyboard responsiveness diagnostics and **Shared Cross-Node Telemetry**.
 
-## AI-Assisted Learning Disclosure
-> *This project was built with extensive assistance from **Google Neon**. Because AI made rapid iteration and rebuilding from scratch inexpensive, I rebuilt repeatedly to learn how systems fit together—focusing on Rust's module boundaries, `///` documentation tests coupled with invariant assertions, cross-platform OS integration, and practical system-design thinking. It works locally with zero cloud or GitHub dependency; future changes are planned through Pull Requests so other builders can pull the code, take it apart to learn, and contribute.*
+Repository: <https://github.com/phangkooihean/edgebridge>
 
-## Why Rust & an Embedded Web Stack?
-- **Single self-contained binary & OS reach:** Rust compiles cleanly into a single native binary with `#[cfg(target_os = "...")]` platform modules for macOS, Linux, and Windows, coordinating an external `lan-mouse` KVM engine over encrypted DTLS (`4242/udp`).
-- **Executable documentation (`///` doctests):** Rust bundles unit tests inside `///` doc comments so invariants are verified directly by `cargo test` alongside the docs you read.
-- **Lean embedded browser UI:** Instead of shipping a heavy Electron/Node runtime, EdgeBridge embeds a single-file HTML/CSS/JS frontend (`include_str!`) served by **`axum`** on **`tokio`**, with **`serde` / `serde_json`** handling typed peer state and shared telemetry.
+---
 
-## Native GitHub Wish List & Bug Tracker
-- Use GitHub's native **Issues** tab as the project **wish list** and **bug tracker**, and **Pull Requests** for proposed changes or critiques. No separate external issue tracker is required.
+## Why EdgeBridge Exists & AI-Assisted Learning Disclosure
 
-## Local Build & Setup for Novices (No Pre-Installed Git or Rust Required)
+Multi-machine desks break down when cursor crossing stutters on congested Wi-Fi, HiDPI display layouts clash, or debugging requires jumping between terminals on separate machines. EdgeBridge solves this with a **20-sample jitter/latency responsiveness monitor** and **Shared Cross-Node Telemetry** (`/api/telemetry/raw`) that pulls peer diagnostics into a single view—a pattern that informs the other diagnostic and multi-device tools I am building.
 
-### macOS (Built-in Terminal)
-  brew list git >/dev/null 2>&1 || brew install git
-  command -v cargo >/dev/null 2>&1 || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-  . "$HOME/.cargo/env"
-  command -v lan-mouse >/dev/null 2>&1 || cargo install lan-mouse
-  "$HOME/edgebridge/build.sh"
+> **AI-Assisted Development Note:** This project was built with extensive assistance from **Google Neon**. Because AI made rapid iteration and rebuilding from scratch inexpensive, I rebuilt repeatedly to study how systems fit together—focusing on Rust's module boundaries, `///` documentation tests coupled with invariant assertions (`cargo test`), cross-platform OS integration, and systems-design trade-offs. EdgeBridge runs 100% locally with zero cloud dependency; all future changes are developed through feature branches and Pull Requests so other builders can clone the repo, take it apart to learn, and contribute.
 
-* macOS Permission Tip: Open System Settings -> Privacy & Security -> Accessibility (and Input Monitoring), press Cmd+Shift+. in the + picker to reveal ~/.cargo/bin/lan-mouse, toggle Terminal and lan-mouse ON, quit Terminal (Cmd+Q), and restart EdgeBridge.
+---
 
-### Ubuntu / Debian (Default Terminal - apt)
-  sudo apt update && sudo apt install -y git curl openssl build-essential libnotify-bin pkg-config libadwaita-1-dev libgtk-4-dev libx11-dev libxtst-dev
-  command -v cargo >/dev/null 2>&1 || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-  . "$HOME/.cargo/env"
-  command -v lan-mouse >/dev/null 2>&1 || cargo install lan-mouse
-  "$HOME/edgebridge/build.sh"
+## Architecture & Rust Stack
 
-### Fedora (Default Terminal - dnf)
-  sudo dnf install -y git curl openssl gcc gcc-c++ make libnotify pkgconf-pkg-config libadwaita-devel gtk4-devel libX11-devel libXtst-devel
-  command -v cargo >/dev/null 2>&1 || curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-  . "$HOME/.cargo/env"
-  command -v lan-mouse >/dev/null 2>&1 || cargo install lan-mouse
-  "$HOME/edgebridge/build.sh"
+| Layer | Crate / Technology | Role in EdgeBridge |
+| :--- | :--- | :--- |
+| **Web & Control Plane** | `axum` + `tokio` | Async HTTP/JSON API, `/24` LAN subnet scanner, and peer state orchestrator on TCP `48720` |
+| **Embedded Browser UI** | `include_str!("web/index.html")` | Single-file HTML/CSS/JS magnetic display canvas & live telemetry console (zero Node/Electron bloat) |
+| **Serialization & Contracts** | `serde` + `serde_json` | Typed peer handshakes, layout mirroring, and shared cross-node telemetry payloads |
+| **OS Platform Backends** | `#[cfg(target_os)]`, `windows-sys`, `libc` | Native multi-monitor layout, awake locks, firewall checks, and OS permission guidance |
+| **KVM Data Plane** | External `lan-mouse` binary | Encrypted DTLS pointer/keyboard transport over UDP `4242` (`[A+S+D+F]` emergency release) |
+| **Executable Docs** | `cargo test` (`///` doctests) | Unit tests embedded directly in module doc comments to enforce invariants |
 
-* Ubuntu & Fedora GNOME Pop-Up Tip (CLI & Webapp): When Step 3 triggers GNOME's Wayland permission prompt, toggle "Allow Remote Input Capturing" ON and click "Share". Locking the screen revokes the portal until you click Stop Sharing and Next.
+---
 
-### Native Windows (PowerShell + winget, No WSL)
-  winget install --id Git.Git -e --source winget
-  winget install --id Rustlang.Rustup -e --source winget
-  winget install --id Microsoft.VisualStudio.2022.BuildTools -e --source winget --override "--quiet --wait --norestart --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
-  cargo install lan-mouse
-  & "$HOME\edgebridge\build.ps1"
+## Quick Start: Build Locally from Scratch
 
-## Publishing to GitHub (phangkooihean)
-  cd ~/edgebridge
-  gh auth login
-  gh repo create phangkooihean/edgebridge --public --source=. --remote=origin --push --tags
+Each platform block below installs missing prerequisites (`git`, Rust `cargo`, and `lan-mouse`), clones the repo, runs `cargo test`, and compiles a standalone release binary.
+
+### 1. macOS (Built-in Terminal — `zsh`)
+
+```zsh
+# Install Homebrew & prerequisites if missing
+command -v brew >/dev/null 2>&1 || /bin/bash -c "$(curl -fsSL [https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh](https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh))"
+brew list git >/dev/null 2>&1 || brew install git openssl
+command -v cargo >/dev/null 2>&1 || curl --proto '=https' --tlsv1.2 -sSf [https://sh.rustup.rs](https://sh.rustup.rs) | sh -s -- -y
+. "$HOME/.cargo/env"
+command -v lan-mouse >/dev/null 2>&1 || cargo install lan-mouse
+
+# Clone, test & build
+git clone [https://github.com/phangkooihean/edgebridge.git](https://github.com/phangkooihean/edgebridge.git) "$HOME/edgebridge"
+"$HOME/edgebridge/build.sh"
+"$HOME/edgebridge/target/release/edgebridge"
+```
+
+> **macOS Accessibility Tip:** At Step 3, open **System Settings -> Privacy & Security -> Accessibility** (and **Input Monitoring**), press `Cmd + Shift + .` inside the `+` file picker to reveal `~/.cargo/bin/lan-mouse`, toggle both **Terminal** and **`lan-mouse`** ON, quit Terminal (`Cmd + Q`), and restart EdgeBridge.
+
+---
+
+### 2. Ubuntu / Debian (Default Terminal — `apt`)
+
+```bash
+# Install build dependencies, Rust & lan-mouse
+sudo apt update && sudo apt install -y git curl openssl build-essential libnotify-bin pkg-config libadwaita-1-dev libgtk-4-dev libx11-dev libxtst-dev
+command -v cargo >/dev/null 2>&1 || curl --proto '=https' --tlsv1.2 -sSf [https://sh.rustup.rs](https://sh.rustup.rs) | sh -s -- -y
+. "$HOME/.cargo/env"
+command -v lan-mouse >/dev/null 2>&1 || cargo install lan-mouse
+
+# Clone, test & build
+git clone [https://github.com/phangkooihean/edgebridge.git](https://github.com/phangkooihean/edgebridge.git) "$HOME/edgebridge"
+"$HOME/edgebridge/build.sh"
+"$HOME/edgebridge/target/release/edgebridge"
+```
+
+---
+
+### 3. Fedora Workstation (Default Terminal — `dnf`)
+
+```bash
+# Install build dependencies, Rust & lan-mouse
+sudo dnf install -y git curl openssl gcc gcc-c++ make libnotify pkgconf-pkg-config libadwaita-devel gtk4-devel libX11-devel libXtst-devel
+command -v cargo >/dev/null 2>&1 || curl --proto '=https' --tlsv1.2 -sSf [https://sh.rustup.rs](https://sh.rustup.rs) | sh -s -- -y
+. "$HOME/.cargo/env"
+command -v lan-mouse >/dev/null 2>&1 || cargo install lan-mouse
+
+# Clone, test & build
+git clone [https://github.com/phangkooihean/edgebridge.git](https://github.com/phangkooihean/edgebridge.git) "$HOME/edgebridge"
+"$HOME/edgebridge/build.sh"
+"$HOME/edgebridge/target/release/edgebridge"
+```
+
+> **Ubuntu & Fedora GNOME Wayland Tip (CLI & Web UI):** When Step 3 starts `lan-mouse`, GNOME displays a system consent pop-up. Toggle **"Allow Remote Input Capturing"** ON and click **"Share"**. Locking the screen revokes Wayland portals until you click **Stop Sharing** and **Next**.
+
+---
+
+### 4. Native Windows 10 / 11 (Windows Terminal / PowerShell — `winget`)
+
+```powershell
+# Install Git, Rust, MSVC C++ Build Tools & lan-mouse
+winget install --id Git.Git -e --source winget
+winget install --id Rustlang.Rustup -e --source winget
+winget install --id Microsoft.VisualStudio.2022.BuildTools -e --source winget --override "--quiet --wait --norestart --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+cargo install lan-mouse
+
+# Clone, test & build
+git clone [https://github.com/phangkooihean/edgebridge.git](https://github.com/phangkooihean/edgebridge.git) "$HOME\edgebridge"
+& "$HOME\edgebridge\build.ps1"
+& "$HOME\edgebridge\target\release\edgebridge.exe"
+```
+
+---
+
+## Wish List, Bug Tracker & Contributing
+
+* **Wish List & Bugs:** Open an issue in GitHub's native **[Issues](https://github.com/phangkooihean/edgebridge/issues)** tab using the *Wish List* or *Bug Report* templates.
+* **Pull Requests:** Fork the repository, create a feature branch (`git checkout -b feat/your-idea`), verify `cargo test` passes, and open a **[Pull Request](https://github.com/phangkooihean/edgebridge/pulls)**.
