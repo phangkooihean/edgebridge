@@ -3,8 +3,7 @@ use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
 /// Portable config/state directory resolution for fresh clones and multi-user setups.
-/// Avoids hardcoded `/home/<username>` paths; falls back to `$HOME/.config/edgebridge`
-/// or current working directory if `$HOME` is unset.
+/// Avoids hardcoded `/home/<username>` or `/Users/<username>` paths.
 pub fn resolve_config_dir() -> PathBuf {
     if let Ok(custom) = env::var("EDGEBRIDGE_CONFIG_DIR") {
         if !custom.trim().is_empty() {
@@ -24,8 +23,8 @@ pub fn resolve_config_dir() -> PathBuf {
     PathBuf::from(".edgebridge-config")
 }
 
-/// Resolve an external tool binary (such as `lan-mouse`) via `PATH` first, then
-/// `$HOME/.cargo/bin` if present, so fresh clones work without hardcoded paths.
+/// Resolve an external tool binary (such as `lan-mouse` or `gh`) via `PATH` first,
+/// then standard Homebrew/Cargo user locations without hardcoding usernames.
 pub fn resolve_binary(bin_name: &str) -> PathBuf {
     if let Some(path_var) = env::var_os("PATH") {
         for dir in env::split_paths(&path_var) {
@@ -35,6 +34,12 @@ pub fn resolve_binary(bin_name: &str) -> PathBuf {
             }
         }
     }
+    for sys_dir in ["/opt/homebrew/bin", "/usr/local/bin"] {
+        let candidate = PathBuf::from(sys_dir).join(bin_name);
+        if candidate.is_file() {
+            return candidate;
+        }
+    }
     if let Ok(home) = env::var("HOME") {
         let cargo_bin = PathBuf::from(home).join(".cargo").join("bin").join(bin_name);
         if cargo_bin.is_file() {
@@ -42,6 +47,19 @@ pub fn resolve_binary(bin_name: &str) -> PathBuf {
         }
     }
     PathBuf::from(bin_name)
+}
+
+/// Check if GitHub CLI (`gh`) is available on this machine for PR/release workflows.
+pub fn is_gh_available() -> bool {
+    let gh_bin = resolve_binary("gh");
+    Command::new(gh_bin)
+        .arg("--version")
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .map(|s| s.success())
+        .unwrap_or(false)
 }
 
 /// Determines whether the webapp should open automatically in a browser.

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
-use std::net::IpAddr;
+use std::net::{IpAddr, Ipv4Addr};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub enum NodeRole {
@@ -99,6 +99,51 @@ impl FailoverState {
         self.primary_status = PrimaryStatus::Lost;
         self.epoch
     }
+}
+
+/// Register or update a peer heard via an incoming probe—even if its IP is on
+/// a different /24 subnet (e.g. 10.213.54.0/24 probing 172.21.157.0/24).
+pub fn upsert_probed_peer(peers: &mut Vec<PeerInfo>, incoming: PeerInfo) {
+    if let Some(existing) = peers
+        .iter_mut()
+        .find(|p| p.node_id == incoming.node_id || p.ip == incoming.ip)
+    {
+        existing.node_id = incoming.node_id;
+        existing.hostname = incoming.hostname;
+        existing.ip = incoming.ip;
+        existing.role = incoming.role;
+        existing.reachable = true;
+        if !incoming.pubkey.is_empty() {
+            existing.pubkey = incoming.pubkey;
+        }
+    } else {
+        peers.push(incoming);
+    }
+}
+
+/// Return unique IPv4 /24 prefixes (a.b.c) across local IP and known/probed peers
+/// so discovery scans also cover cross-subnet peers that probed this node.
+pub fn discovery_ipv4_prefixes(local_ip: IpAddr, peers: &[PeerInfo]) -> Vec<[u8; 3]> {
+    let mut prefixes = Vec::new();
+    let mut push_ip = |ip: IpAddr| {
+        if let IpAddr::V4(v4) = ip {
+            let octets = v4.octets();
+            let prefix = [octets[0], octets[1], octets[2]];
+            if !prefixes.contains(&prefix) {
+                prefixes.push(prefix);
+            }
+        }
+    };
+    push_ip(local_ip);
+    for peer in peers {
+        push_ip(peer.ip);
+    }
+    prefixes
+}
+
+/// Helper to build an IPv4 address from a /24 prefix and host octet.
+pub fn ipv4_from_prefix(prefix: [u8; 3], host: u8) -> Ipv4Addr {
+    Ipv4Addr::new(prefix[0], prefix[1], prefix[2], host)
 }
 
 pub fn format_kvm_target(peer: &PeerInfo, port: u16) -> String {
