@@ -3,7 +3,7 @@ mod runtime;
 
 use cluster::{
     discovery_ipv4_prefixes, elect_new_primary, find_edge_conflicts, format_kvm_target,
-    upsert_probed_peer, ClusterSnapshot, FailoverState, NodeRole, PeerInfo, PrimaryStatus,
+    upsert_probed_peer, ClusterSnapshot, FailoverState, PeerInfo, PrimaryStatus,
     ScreenEdge,
 };
 use runtime::{
