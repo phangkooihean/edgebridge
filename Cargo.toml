@@ -1,6 +1,6 @@
 [package]
 name = "edgebridge"
-version = "1.0.0-rc.1"
+version = "1.0.0-rc.2"
 edition = "2021"
 license = "MIT"
 description = "Single-binary Rust LAN KVM orchestrator with embedded browser UI, shared telemetry, and multi-peer topology for macOS, Linux, and Windows."

@@ -1,3 +1,6 @@
+mod cluster;
+mod runtime;
+
 use edgebridge::eb_log;
 use edgebridge::kvm::collector::KvmProcessManager;
 use edgebridge::models::{
@@ -127,4 +130,19 @@ async fn main() {
     });
 
     axum::serve(listener, web_api::build_router(ctx)).await.expect("Webapp error");
+}
+
+#[allow(dead_code)]
+fn init_release2_runtime(
+    cli_open_ui: bool,
+    webapp_url: Option<&str>,
+) -> (crate::runtime::WizardTelemetry, crate::cluster::FailoverState) {
+    let config_dir = crate::runtime::resolve_config_dir();
+    let _ = std::fs::create_dir_all(&config_dir);
+    let wizard = crate::runtime::WizardTelemetry::default();
+    let failover = crate::cluster::FailoverState::new(1, String::new(), 0, 15_000);
+    if let Some(url) = webapp_url {
+        crate::runtime::launch_webapp_browser(url, cli_open_ui);
+    }
+    (wizard, failover)
 }
