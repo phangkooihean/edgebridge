@@ -1,3 +1,16 @@
+mod cluster;
+mod runtime;
+
+use cluster::{
+    discovery_ipv4_prefixes, elect_new_primary, find_edge_conflicts, format_kvm_target,
+    upsert_probed_peer, ClusterSnapshot, FailoverState, NodeRole, PeerInfo, PrimaryStatus,
+    ScreenEdge,
+};
+use runtime::{
+    launch_webapp_browser, macos_network_guidance, prompt_os_setup_wizard, resolve_binary,
+    resolve_config_dir, should_open_browser, ubuntu_wayland_guidance, WizardTelemetry,
+};
+
 use edgebridge::eb_log;
 use edgebridge::kvm::collector::KvmProcessManager;
 use edgebridge::models::{
@@ -127,4 +140,16 @@ async fn main() {
     });
 
     axum::serve(listener, web_api::build_router(ctx)).await.expect("Webapp error");
+}
+
+#[allow(dead_code)]
+fn init_release2_runtime(cli_open_ui: bool, webapp_url: Option<&str>) -> (WizardTelemetry, FailoverState) {
+    let config_dir = resolve_config_dir();
+    let _ = std::fs::create_dir_all(&config_dir);
+    let mut wizard = WizardTelemetry::default();
+    let failover = FailoverState::new(1, String::new(), 0, 15_000);
+    if let Some(url) = webapp_url {
+        launch_webapp_browser(url, cli_open_ui);
+    }
+    (wizard, failover)
 }
